@@ -1,6 +1,6 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import React from 'react';
-import {useRouter} from 'next/router';
+import { useRouter } from 'next/router';
 import appConfig from '../config.json';
 
 function Title(props) {
@@ -22,7 +22,7 @@ function Title(props) {
 
 export default function PaginaInicial() {
     //const username = 'eduardohbarbosa';
-    const [username, setUsername] = React.useState('eduardohbarbosa')
+    const [username, setUsername] = React.useState('eduardohbarbosa');
     const router = useRouter();
 
     return (
@@ -45,7 +45,7 @@ export default function PaginaInicial() {
                         },
                         width: '100%', maxWidth: '700px',
                         borderRadius: '5px', padding: '32px', margin: '16px',
-                        border: `solid 2px ${appConfig.theme.colors.newColors["250"]}` ,
+                        border: `solid 2px ${appConfig.theme.colors.newColors["250"]}`,
                         boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
                         backgroundColor: `${appConfig.theme.colors.newColors['000']}`,
                     }}
@@ -53,7 +53,7 @@ export default function PaginaInicial() {
                     {/* Formulário */}
                     <Box
                         as="form"
-                        onSubmit={function(event){
+                        onSubmit={function (event) {
                             event.preventDefault();
                             console.log('Alguém submeteu o formulario');
                             router.push('/chat')
@@ -70,7 +70,7 @@ export default function PaginaInicial() {
                             {appConfig.name}
                         </Text>
 
-{/*                         <input 
+                        {/*                         <input 
                             type="text"
                             value={username}
                             onChange={function (event){
@@ -82,14 +82,14 @@ export default function PaginaInicial() {
                             }}
                         /> */}
 
-                         { <TextField
+                        {<TextField
                             value={username}
-                            onChange={function (event){
-                            console.log('usuario digitou', event.target.value);
-                            //Onde está o valor?
-                            const valor = event.target.value
-                            //Trocar o valor da variavel através do React e avise quem precisa;
-                            setUsername(valor);
+                            onChange={function (event) {
+                                //console.log(event.target.value);
+                                //Onde está o valor?
+                                const valor = event.target.value
+                                //Trocar o valor da variavel através do React e avise quem precisa;
+                                setUsername(valor);
                             }}
                             fullWidth
                             textFieldColors={{
@@ -97,9 +97,10 @@ export default function PaginaInicial() {
                                     textColor: appConfig.theme.colors.neutrals["000"],
                                     mainColor: appConfig.theme.colors.newColors["100"],
                                     mainColorHighlight: appConfig.theme.colors.newColors["200"],
-                                    backgroundColor: appConfig.theme.colors.newColors["000"]                                },
+                                    backgroundColor: appConfig.theme.colors.newColors["000"]
+                                },
                             }}
-                        /> }
+                        />}
                         <Button
                             type='submit'
                             label='Entrar'
@@ -136,7 +137,7 @@ export default function PaginaInicial() {
                                 borderRadius: '50%',
                                 marginBottom: '16px',
                             }}
-                            src={`https://github.com/${username}.png`}
+                            src={`https://github.com/${username.length >= 2 ? username : ""}.png`}
                         />
                         <Text
                             variant="body4"
@@ -147,7 +148,7 @@ export default function PaginaInicial() {
                                 borderRadius: '1000px'
                             }}
                         >
-                            {username}
+                            {username.length >= 2 ? username : ""}
                         </Text>
                     </Box>
                     {/* Photo Area */}
