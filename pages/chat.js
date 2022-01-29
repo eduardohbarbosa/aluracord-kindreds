@@ -3,10 +3,10 @@ import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
 
+//Informações do SUPABASE
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQwMDY0MCwiZXhwIjoxOTU4OTc2NjQwfQ.Zk6-ED8Y-p36hTyOnkCuvAvNujnFH895X3jg4JGM980';
 const SUPABASE_URL = 'https://ajeylcqwnohotupqmcdn.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 
 export default function ChatPage() {
     // Sua lógica vai aqui
@@ -14,31 +14,12 @@ export default function ChatPage() {
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
     console.log(mensagem);
     /*
-    Usuario
-    -Usuário digita no campo textarea
-    -Aperta enter para enviar
-    -Tem que adicionar o texto na listagem
- 
-    Dev
-    - [x]Campo criado
-    - [x]Vamos usar o onChange usa o useStage (ter if pra caso seja enter pra limpar a variavel)
-    - [x]Lista de mensagens
-
     Desafios
-    - [x]Paulo: Colocar o botão de OK para enviar a mensagem
-    - [x]Mario: Colocar um botão de apagar mensagem! Dica: use o filter
+    - [X]Mario Souto: Mostrar o loading de mensagens (Tem que fazer o mais criativo ein!)
+    - [ ]Paulo Silveira: Fazer um efeito quando passar o mouse em cima (Use esse link como referência: https://pt-br.reactjs.org/docs/events.html#mouse-events)
+    - [ ]Se quiser tentar criar alguma coisa mais diferentona, fique a vontade para criar e compartilhe com a gente :)
     */
-
-    React.useEffect(() => {
-        supabaseClient
-            .from('mensagens')
-            .select('*')
-            .order('id', { ascending: false })
-            .then(({ data }) => {
-                console.log('Dados da consulta:', data[0]);
-                setListaDeMensagens(data);
-            });
-    }, []);
+    pegaMensagens(setListaDeMensagens);
 
     function handleNovaMensagem(novaMensgem) {
         const mensagem = {
@@ -47,17 +28,7 @@ export default function ChatPage() {
             texto: novaMensgem,
         }
 
-        supabaseClient
-            .from('mensagens')
-            .insert([
-                mensagem
-            ])
-            .then(({data}) => {
-                setListaDeMensagens([
-                    data[0],
-                    ...listaDeMensagens
-                ]);
-            })
+        insereDadosBanco(mensagem, listaDeMensagens, setListaDeMensagens)
 
         setMensagem('')
     }
@@ -68,9 +39,8 @@ export default function ChatPage() {
         <Box
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: appConfig.theme.colors.primary[500],
-                backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
-                backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
+                backgroundImage: `url(https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Kindred_3.jpg)`,
+                backgroundRepeat: 'no-repeat', backgroundSize: 'cover',
                 color: appConfig.theme.colors.neutrals['000']
             }}
         >
@@ -81,7 +51,9 @@ export default function ChatPage() {
                     flex: 1,
                     boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
                     borderRadius: '5px',
-                    backgroundColor: appConfig.theme.colors.neutrals[700],
+                    border: `solid 2px ${appConfig.theme.colors.newColors["250"]}`,
+                    boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
+                    backgroundColor: `${appConfig.theme.colors.newColors['000']}`,
                     height: '100%',
                     maxWidth: '95%',
                     maxHeight: '95vh',
@@ -95,23 +67,27 @@ export default function ChatPage() {
                         display: 'flex',
                         flex: 1,
                         height: '80%',
-                        backgroundColor: appConfig.theme.colors.neutrals[600],
+                        border: `solid 2px ${appConfig.theme.colors.newColors["250"]}`,
+                        boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
+                        backgroundColor: `${appConfig.theme.colors.newColors['000']}`,
                         flexDirection: 'column',
                         borderRadius: '5px',
                         padding: '16px',
                     }}
                 >
 
-                    {<MessageList
-                        mensagens={listaDeMensagens}
-                        removeMensagens={(id) => {
-                            setListaDeMensagens(
-                                listaDeMensagens.filter((mensagem) => {
-                                    return mensagem.id != id
-                                })
-                            )
-                        }}
-                    />}
+                    {listaDeMensagens.length === 0 ? <LoadMessage/> :
+                        <MessageList
+                            mensagens={listaDeMensagens}
+                            removeMensagens={(id) => {
+                                setListaDeMensagens(
+                                    listaDeMensagens.filter((mensagem) => {
+                                        return mensagem.id != id
+                                    })
+                                )
+                            }}
+                        />
+                    }
                     {/*{listaDeMensagem.map((mensagemAtual) =>{
                         return(
                             <li key={mensagemAtual.id}>
@@ -178,10 +154,7 @@ export default function ChatPage() {
 function Header() {
     return (
         <>
-            <Box styleSheet={{ width: '100%', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} >
-                <Text variant='heading5'>
-                    Chat
-                </Text>
+            <Box styleSheet={{ width: '100%', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'end' }} >
                 <Button
                     variant='tertiary'
                     colorVariant='neutral'
@@ -190,6 +163,26 @@ function Header() {
                 />
             </Box>
         </>
+    )
+};
+
+function LoadMessage() {
+    return (
+        <Box
+            styleSheet={{
+                display : "flex",
+                justifyContent : "center"
+            }}
+        >
+            <Image
+                styleSheet={{
+                    //width: '20px',
+                    //height: '20px',
+                    borderRadius: '20px',
+                }}
+                src={`https://media2.giphy.com/media/3oKIP73vEZmJjFNXtC/giphy.gif?cid=790b76112a05c8dce79659e51770f53b15eb2f6708159392&rid=giphy.gif&ct=g`}
+            />
+        </Box>
     )
 }
 
@@ -211,18 +204,61 @@ function MessageList(props) {
             {props.mensagens.map((mensagem) => {
                 return (
 
-                    <Text
-                        key={mensagem.id}
-                        tag="li"
+                    <Box
                         styleSheet={{
-                            borderRadius: '5px',
-                            padding: '6px',
-                            marginBottom: '12px',
-                            hover: {
-                                backgroundColor: appConfig.theme.colors.neutrals[700],
-                            }
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center"
                         }}
                     >
+                        <Text
+                            key={mensagem.id}
+                            tag="li"
+                            styleSheet={{
+                                borderRadius: '5px',
+                                padding: '6px',
+                                marginBottom: '12px',
+                                flexGrow: 2,
+                                hover: {
+                                    backgroundColor: appConfig.theme.colors.neutrals[700],
+                                }
+                            }}
+                        >
+
+                            <Box
+                                styleSheet={{
+                                    marginBottom: '8px',
+                                }}
+                            >
+
+                                <Image
+                                    styleSheet={{
+                                        width: '20px',
+                                        height: '20px',
+                                        borderRadius: '50%',
+                                        display: 'inline-block',
+                                        marginRight: '8px',
+                                    }}
+                                    src={`https://github.com/${mensagem.de}.png`}
+                                />
+                                <Text tag="strong">
+                                    {mensagem.de}
+                                </Text>
+                                <Text
+                                    styleSheet={{
+                                        fontSize: '10px',
+                                        marginLeft: '8px',
+                                        color: appConfig.theme.colors.neutrals[300],
+                                    }}
+                                    tag="span"
+                                >
+                                    {(new Date().toLocaleDateString())}
+                                </Text>
+                            </Box>
+                            {mensagem.texto}
+                        </Text>
+
                         <Button onClick={() => {
                             props.removeMensagens(mensagem.id)
                         }}
@@ -230,42 +266,47 @@ function MessageList(props) {
                             styleSheet={{
                                 color: "white",
                             }}
-                        />
-                        <Box
-                            styleSheet={{
-                                marginBottom: '8px',
+                            buttonColors={{
+                                contrastColor: appConfig.theme.colors.neutrals["000"],
+                                mainColor: appConfig.theme.colors.newColors["300"],
+                                mainColorLight: appConfig.theme.colors.newColors["300"],
+                                mainColorStrong: appConfig.theme.colors.primary["000"],
                             }}
-                        >
-
-                            <Image
-                                styleSheet={{
-                                    width: '20px',
-                                    height: '20px',
-                                    borderRadius: '50%',
-                                    display: 'inline-block',
-                                    marginRight: '8px',
-                                }}
-                                src={`https://github.com/${mensagem.de}.png`}
-                            />
-                            <Text tag="strong">
-                                {mensagem.de}
-                            </Text>
-                            <Text
-                                styleSheet={{
-                                    fontSize: '10px',
-                                    marginLeft: '8px',
-                                    color: appConfig.theme.colors.neutrals[300],
-                                }}
-                                tag="span"
-                            >
-                                {(new Date().toLocaleDateString())}
-                            </Text>
-                        </Box>
-                        {mensagem.texto}
-                    </Text>
+                        />
+                    </Box>
                 )
             })
             }
         </Box>
     )
-}
+};
+
+function pegaMensagens(setListaDeMensagens) {
+    return (
+        React.useEffect(() => {
+            supabaseClient
+                .from('mensagens')
+                .select('*')
+                .order('id', { ascending: false })
+                .then(({ data }) => {
+                    console.log('Dados da consulta:', data[0]);
+                    setListaDeMensagens(data);
+                });
+        }, [])
+    )
+};
+
+function insereDadosBanco(mensagem, listaDeMensagens, setListaDeMensagens) {
+    return (
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then(({ data }) => {
+                setListaDeMensagens([
+                    data[0],
+                    ...listaDeMensagens
+                ]);
+            }))
+};
