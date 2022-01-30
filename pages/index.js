@@ -56,7 +56,7 @@ export default function PaginaInicial() {
                         onSubmit={function (event) {
                             event.preventDefault();
                             console.log('Alguém submeteu o formulario');
-                            router.push('/chat')
+                            router.push(`/chat?username=${username}`)
                         }
 
                         }

@@ -1,7 +1,9 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
 //Informações do SUPABASE
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQwMDY0MCwiZXhwIjoxOTU4OTc2NjQwfQ.Zk6-ED8Y-p36hTyOnkCuvAvNujnFH895X3jg4JGM980';
@@ -10,9 +12,23 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
     // Sua lógica vai aqui
+    const roteamento = useRouter();
+    const usuarioLogado = roteamento.query.username
+    console.log("User: ", usuarioLogado)
     const [mensagem, setMensagem] = React.useState('');
-    const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
-    console.log(mensagem);
+    const [listaDeMensagens, setListaDeMensagens] = React.useState([
+        // {
+        //     id: 1,
+        //     de: 'eduardohbarbosa',
+        //     texto: ':sticker: https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_1.png'
+        // },
+        // {
+        //     id: 2,
+        //     de: 'peas',
+        //     texto: 'Olá'
+        // }
+    ]);
+
     /*
     Desafios
     - [X]Mario Souto: Mostrar o loading de mensagens (Tem que fazer o mais criativo ein!)
@@ -24,12 +40,11 @@ export default function ChatPage() {
     function handleNovaMensagem(novaMensgem) {
         const mensagem = {
             //id: listaDeMensagens.length + 1,
-            de: "eduardohbarbosa",
+            de: usuarioLogado,
             texto: novaMensgem,
         }
 
         insereDadosBanco(mensagem, listaDeMensagens, setListaDeMensagens)
-
         setMensagem('')
     }
 
@@ -76,7 +91,7 @@ export default function ChatPage() {
                     }}
                 >
 
-                    {listaDeMensagens.length === 0 ? <LoadMessage/> :
+                    {listaDeMensagens.length === 0 ? <LoadMessage /> :
                         <MessageList
                             mensagens={listaDeMensagens}
                             removeMensagens={(id) => {
@@ -132,6 +147,12 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
                         />
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                console.log(':sticker:', sticker);
+                                handleNovaMensagem(':sticker: ' + sticker);
+                            }}
+                        />
                         <Button
                             type='submit'
                             label='Enviar'
@@ -141,9 +162,7 @@ export default function ChatPage() {
                                 mainColorLight: appConfig.theme.colors.newColors["300"],
                                 mainColorStrong: appConfig.theme.colors.primary["000"],
                             }}
-
                         />
-
                     </Box>
                 </Box>
             </Box>
@@ -170,8 +189,8 @@ function LoadMessage() {
     return (
         <Box
             styleSheet={{
-                display : "flex",
-                justifyContent : "center"
+                display: "flex",
+                justifyContent: "center"
             }}
         >
             <Image
@@ -256,7 +275,14 @@ function MessageList(props) {
                                     {(new Date().toLocaleDateString())}
                                 </Text>
                             </Box>
-                            {mensagem.texto}
+                            {/* Condicional */}
+                            {mensagem.texto.startsWith(':sticker:')
+                                ? (
+                                    <Image src={mensagem.texto.replace(':sticker:', '')} />
+                                )
+                                : (
+                                    mensagem.texto
+                                )}
                         </Text>
 
                         <Button onClick={() => {
