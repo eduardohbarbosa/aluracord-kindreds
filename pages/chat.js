@@ -10,31 +10,15 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5v
 const SUPABASE_URL = 'https://ajeylcqwnohotupqmcdn.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
 export default function ChatPage() {
     // Sua lógica vai aqui
     const roteamento = useRouter();
     const usuarioLogado = roteamento.query.username
     console.log("User: ", usuarioLogado)
     const [mensagem, setMensagem] = React.useState('');
-    const [listaDeMensagens, setListaDeMensagens] = React.useState([
-        // {
-        //     id: 1,
-        //     de: 'eduardohbarbosa',
-        //     texto: ':sticker: https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_1.png'
-        // },
-        // {
-        //     id: 2,
-        //     de: 'peas',
-        //     texto: 'Olá'
-        // }
-    ]);
+    const [listaDeMensagens, setListaDeMensagens] = React.useState([ ]);
 
-    /*
-    Desafios
-    - [X]Mario Souto: Mostrar o loading de mensagens (Tem que fazer o mais criativo ein!)
-    - [ ]Paulo Silveira: Fazer um efeito quando passar o mouse em cima (Use esse link como referência: https://pt-br.reactjs.org/docs/events.html#mouse-events)
-    - [ ]Se quiser tentar criar alguma coisa mais diferentona, fique a vontade para criar e compartilhe com a gente :)
-    */
     pegaMensagens(setListaDeMensagens);
 
     function handleNovaMensagem(novaMensgem) {
@@ -195,8 +179,7 @@ function LoadMessage() {
         >
             <Image
                 styleSheet={{
-                    //width: '20px',
-                    //height: '20px',
+                    width: '400px',
                     borderRadius: '20px',
                 }}
                 src={`https://media2.giphy.com/media/3oKIP73vEZmJjFNXtC/giphy.gif?cid=790b76112a05c8dce79659e51770f53b15eb2f6708159392&rid=giphy.gif&ct=g`}
@@ -278,7 +261,11 @@ function MessageList(props) {
                             {/* Condicional */}
                             {mensagem.texto.startsWith(':sticker:')
                                 ? (
-                                    <Image src={mensagem.texto.replace(':sticker:', '')} />
+                                    <Image src={mensagem.texto.replace(':sticker:', '')} 
+                                    styleSheet={{
+                                        width: '200px'
+                                    }}
+                                    />
                                 )
                                 : (
                                     mensagem.texto
@@ -318,11 +305,23 @@ function pegaMensagens(setListaDeMensagens) {
                     console.log('Dados da consulta:', data[0]);
                     setListaDeMensagens(data);
                 });
+
+            escutaMensagensEmTempoReal((novaMensgem) => {
+                //handleNovaMensagem(novaMensgem)
+                setListaDeMensagens((valorAtualDaLista) => {
+                    return(
+                        [
+                            novaMensgem,
+                            ...valorAtualDaLista
+                        ]
+                    )
+                });
+            });
         }, [])
     )
 };
 
-function insereDadosBanco(mensagem, listaDeMensagens, setListaDeMensagens) {
+function insereDadosBanco(mensagem) {
     return (
         supabaseClient
             .from('mensagens')
@@ -330,9 +329,19 @@ function insereDadosBanco(mensagem, listaDeMensagens, setListaDeMensagens) {
                 mensagem
             ])
             .then(({ data }) => {
-                setListaDeMensagens([
-                    data[0],
-                    ...listaDeMensagens
-                ]);
-            }))
+                // setListaDeMensagens([
+                //     data[0],
+                //     ...listaDeMensagens
+                // ]);
+            })
+            )
 };
+
+function escutaMensagensEmTempoReal(adicionaMensagem){
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (respostaLive) => {
+            adicionaMensagem(respostaLive.new)
+        })
+        .subscribe();
+}
